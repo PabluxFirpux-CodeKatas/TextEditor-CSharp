@@ -42,8 +42,8 @@ namespace TextEditor.Tables
             int beginIndex = getGeneralIndex(c);
             _cells.Remove(c);
             int diff = index - beginIndex;
-            Cell prev = new Cell(FileType.ORIGINAL, c.getIndex(), diff);
-            Cell post = new Cell(FileType.ORIGINAL, c.getIndex() + diff, c.getLength() - diff);
+            Cell prev = new Cell(c.getFileType(), c.getIndex(), diff);
+            Cell post = new Cell(c.getFileType(), c.getIndex() + diff, c.getLength() - diff);
             _cells.Insert(cellIndex++, prev);
             _cells.Insert(cellIndex++, toAdd);
             _cells.Insert(cellIndex++, post);
@@ -61,9 +61,9 @@ namespace TextEditor.Tables
                 int cellIndex = _cells.IndexOf(c);
                 int beginIndex = getGeneralIndex(c);
                 int diff = index - beginIndex;
-                Cell prev = new Cell(FileType.ORIGINAL, c.getIndex(), diff);
+                Cell prev = new Cell(FileType.ORIGINAL, c.getIndex(), diff - 1);
                 Cell post = new Cell(FileType.ORIGINAL, c.getIndex() + diff, c.getLength() - diff);
-                prev.setLenght(c.getLength() - 1);
+                // prev.setLenght(prev.getLength() - 1);
                 _cells.Remove(c);
                 _cells.Insert(cellIndex++, prev);
                 _cells.Insert(cellIndex++, post);

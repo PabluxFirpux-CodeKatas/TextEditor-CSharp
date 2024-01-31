@@ -29,7 +29,11 @@ namespace TextEditor.app
                 Console.WriteLine(table.parseTable());
                 Thread.Sleep(1000 / 60);
             } */
-            CLIEditor.start();
+            String path = "./test.txt";
+            Files.File file = new Files.File(path);
+            Table table = new Table(file.getFullText());
+            CLIEditor editor = new CLIEditor(table);
+            editor.start();
         }
     }
 }

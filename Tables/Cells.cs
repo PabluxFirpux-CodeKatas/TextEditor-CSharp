@@ -25,7 +25,7 @@ namespace TextEditor.Tables
         public int getLength() { return _length; }
         public void setLenght(int l) { _length = l; }
 
-        public String ToString()
+        public override String ToString()
         {
             return ((_ftype == FileType.ORIGINAL) ? "Original, " : "New, ") + "Index: " + _beginIndex + ", Length: " + _length + ".";
         }

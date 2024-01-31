@@ -1,35 +1,73 @@
+using System.Security.Cryptography;
+using Microsoft.VisualBasic;
+
 namespace TextEditor.Interface
 {
     class CLIEditor
     {
-        static ConsoleKey[] specialCharacters = { ConsoleKey.UpArrow, ConsoleKey.DownArrow, ConsoleKey.LeftArrow, ConsoleKey.RightArrow, ConsoleKey.Escape, ConsoleKey.Backspace };
-        static void exitProgram(int code = 0)
+        Tables.Table _table;
+        CLIScreen _screen;
+        static ConsoleKey[] specialCharacters = { ConsoleKey.UpArrow, ConsoleKey.DownArrow, ConsoleKey.LeftArrow, ConsoleKey.RightArrow, ConsoleKey.Escape, ConsoleKey.Backspace, ConsoleKey.Enter };
+
+        public CLIEditor(Tables.Table table)
+        {
+            _table = table;
+        }
+        void exitProgram(int code = 0)
         {
             Console.Clear();
             Console.TreatControlCAsInput = false;
             Environment.Exit(code);
         }
 
-        public static void start(String docName = "PabloWord")
+        public void start(String docName = "PabloWord")
         {
             Console.Title = $"{docName}";
-            Console.Clear();
             Console.CursorVisible = true;
             Console.TreatControlCAsInput = true;
+            ReDraw();
+            Console.SetCursorPosition(2, 0);
             while (true)
             {
                 ConsoleKeyInfo key = Console.ReadKey(true);
-                handleKeyPress(key);
+                if (handleKeyPress(key)) ReDraw();
             }
         }
 
-        static void handleKeyPress(ConsoleKeyInfo key)
+        void ReDraw()
         {
-            if (specialCharacters.Contains(key.Key)) handleSpecialCharacter(key.Key);
-            else Console.Write(key.KeyChar);
+            (int, int) pos = Console.GetCursorPosition();
+            Console.Clear();
+            _screen = new CLIScreen(_table.parseTable());
+            print(_screen);
+            Console.SetCursorPosition(pos.Item1, pos.Item2);
         }
 
-        static void handleSpecialCharacter(ConsoleKey key)
+        void print(CLIScreen screen)
+        {
+            List<CLILine> lines = screen.getLines();
+            for (int i = 0; i < Console.WindowHeight - 1; i++)
+            {
+                if (i < lines.Count)
+                {
+                    Console.Write(lines[i].getNum().ToString() + " " + lines[i].getText());
+                }
+                else
+                {
+                    Console.WriteLine("~");
+                }
+            }
+        }
+
+        Boolean handleKeyPress(ConsoleKeyInfo key)
+        {
+            if (specialCharacters.Contains(key.Key)) handleSpecialCharacter(key.Key);
+            else addText(key.KeyChar.ToString());
+
+            return !specialCharacters.Contains(key.Key);
+        }
+
+        void handleSpecialCharacter(ConsoleKey key)
         {
             switch (key)
             {
@@ -45,18 +83,41 @@ namespace TextEditor.Interface
                 case ConsoleKey.Backspace:
                     deleteText();
                     break;
+                case ConsoleKey.Enter:
+                    addText(Environment.NewLine);
+                    break;
             }
         }
 
-        static void deleteText()
+        void deleteText()
         {
-            //TODO: Optimize delete
+            _table.deleteText(getCursorIndex());
             handleCursor(ConsoleKey.LeftArrow);
-            Console.Write(" ");
-            handleCursor(ConsoleKey.LeftArrow);
+            ReDraw();
         }
 
-        static void handleCursor(ConsoleKey key)
+        void addText(String text)
+        {
+            _table.addText(text, getCursorIndex());
+            handleCursor(ConsoleKey.RightArrow);
+            ReDraw();
+        }
+
+        int getCursorIndex()
+        {
+            (int, int) pos = Console.GetCursorPosition();
+            int index = 0;
+            List<CLILine> lines = _screen.getLines();
+            foreach (CLILine line in lines)
+            {
+                if (pos.Item2 == line.getNum() - 1) break;
+                index += line.getLength();
+            }
+            index += pos.Item1 - 2;
+            return index;
+        }
+
+        void handleCursor(ConsoleKey key)
         {
             int left = Console.CursorLeft;
             int top = Console.CursorTop;
@@ -67,7 +128,7 @@ namespace TextEditor.Interface
                     top -= (top < 1) ? 0 : 1;
                     break;
                 case ConsoleKey.LeftArrow:
-                    left -= (left < 1) ? 0 : 1;
+                    left -= (left < 3) ? 0 : 1;
                     break;
                 case ConsoleKey.DownArrow:
                     top += (top >= Console.WindowHeight - 1) ? 0 : 1;
