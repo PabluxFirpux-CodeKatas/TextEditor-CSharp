@@ -3,9 +3,11 @@ namespace TextEditor.Interface
     class CLIScreen
     {
         List<CLILine> _lines;
+        int _num;
         public CLIScreen(String text)
         {
             _lines = new List<CLILine>();
+            _num = 0;
             generate(text);
         }
 
@@ -13,19 +15,36 @@ namespace TextEditor.Interface
 
         void generate(String text)
         {
+            _num = 0;
             String[] strings = text.Split(Environment.NewLine);
-            for (int i = 0; i < strings.Length; i++)
+            foreach (String s in strings)
             {
-                if (strings[i].Length >= Console.WindowWidth - 2)
+                if (s.Length >= Console.WindowWidth - 2)
                 {
-
+                    recursiveLines(s);
                 }
                 else
                 {
-                    strings[i] += Environment.NewLine;
-                    _lines.Add(new CLILine(i + 1, strings[i]));
+                    String line = s;
+                    line += Environment.NewLine;
+                    _lines.Add(new CLILine(_num + 1, line));
                 }
+                _num++;
+            }
+        }
 
+        void recursiveLines(String line)
+        {
+            if (line.Length >= Console.WindowWidth - 2)
+            {
+                _lines.Add(new CLILine(_num, line.Substring(0, Console.WindowWidth - 2)));
+                _num++;
+                recursiveLines(line.Substring(Console.WindowWidth - 2));
+            }
+            else
+            {
+                _lines.Add(new CLILine(_num, line));
+                _num++;
             }
         }
     }
