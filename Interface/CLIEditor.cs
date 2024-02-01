@@ -9,6 +9,8 @@ namespace TextEditor.Interface
         StringBuilder _buffer;
         Boolean _movedCursor;
         int _lastPos;
+        int _heightOffset;
+        int _separation;
         static ConsoleKey[] specialCharacters = { ConsoleKey.UpArrow, ConsoleKey.DownArrow, ConsoleKey.LeftArrow, ConsoleKey.RightArrow, ConsoleKey.Escape, ConsoleKey.Backspace, ConsoleKey.Enter };
 
         public CLIEditor(Tables.Table table)
@@ -17,6 +19,8 @@ namespace TextEditor.Interface
             _buffer = new StringBuilder();
             _movedCursor = false;
             _lastPos = 0;
+            _heightOffset = 0;
+            _separation = 2;
         }
         void exitProgram(int code = 0)
         {
@@ -59,11 +63,16 @@ namespace TextEditor.Interface
         void print(CLIScreen screen)
         {
             List<CLILine> lines = screen.getLines();
-            for (int i = 0; i < Console.WindowHeight - 1; i++)
+            int maxInd = lines.Count() + 1;
+            _separation = maxInd.ToString().Length + 1;
+            for (int i = _heightOffset; i < _heightOffset + Console.BufferHeight - 1; i++)
             {
                 if (i < lines.Count)
                 {
-                    Console.Write(lines[i].getNum().ToString() + " " + lines[i].getText());
+                    String ind = lines[i].getNum().ToString();
+                    Console.Write(ind);
+                    for (int j = 0; j < _separation - ind.Length; j++) Console.Write(" ");
+                    Console.Write(lines[i].getText());
                 }
                 else
                 {
@@ -136,7 +145,7 @@ namespace TextEditor.Interface
                 if (pos.Item2 == line.getNum() - 1) break;
                 index += line.getLength();
             }
-            index += pos.Item1 - 2;
+            index += pos.Item1 - _separation;
             _lastPos = index;
             _movedCursor = false;
             return index;
@@ -161,11 +170,26 @@ namespace TextEditor.Interface
                     left += 1;
                     break;
             }
-            if (top < 0) top = 0;
-            if (top > _screen.getLines().Count - 1) top = _screen.getLines().Count - 1;
-            if (left < 2) left = 2;
-            if (left > _screen.getLines().ToArray().ElementAt(top).getLength()) left = _screen.getLines().ToArray().ElementAt(top).getLength();
+            if (top < 0) { top = 0; scrollUp(); }
+            if (top > _screen.getLines().Count - _heightOffset - 1 || top >= Console.BufferHeight - 1) { top = Math.Min(Console.BufferHeight - 1, _screen.getLines().Count - _heightOffset - 1); }
+            if (top > Console.BufferHeight - 4) scrollDown();
+            if (left < _separation) left = _separation;
+            if (left > _screen.getLines().ToArray().ElementAt(top).getLength() + _separation - 2) left = _screen.getLines().ToArray().ElementAt(top).getLength() + _separation - 2;
+
             Console.SetCursorPosition(left, top);
+        }
+
+        void scrollUp()
+        {
+            if (_heightOffset < 1) return;
+            _heightOffset -= 1;
+            ReDraw();
+        }
+
+        void scrollDown()
+        {
+            _heightOffset += 1;
+            ReDraw();
         }
     }
 }
