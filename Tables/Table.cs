@@ -38,6 +38,11 @@ namespace TextEditor.Tables
             Cell c = getCellAtIndex(index);
             Cell toAdd = new Cell(FileType.MODIFICATION, _modification.Length, text.Length);
             _modification += text;
+            if (c == null)
+            {
+                _cells.Insert(_cells.Count, toAdd);
+                return;
+            }
             int cellIndex = _cells.IndexOf(c);
             int beginIndex = getGeneralIndex(c);
             _cells.Remove(c);
@@ -69,8 +74,6 @@ namespace TextEditor.Tables
                 _cells.Insert(cellIndex++, post);
 
             }
-
-
         }
 
         private Cell getCellAtIndex(int i)

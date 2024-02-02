@@ -50,7 +50,15 @@ namespace TextEditor.Interface
         {
             (int, int) pos = Console.GetCursorPosition();
             StringBuilder textToDraw = new StringBuilder(_table.parseTable());
-            textToDraw.Insert(getCursorIndex(), _buffer.ToString());
+            int index = getCursorIndex();
+            if (index > textToDraw.Length)
+            {
+                textToDraw.Append(_buffer.ToString());
+            }
+            else
+            {
+                textToDraw.Insert(getCursorIndex(), _buffer.ToString());
+            }
             _screen = new CLIScreen(textToDraw.ToString());
 
             Console.Clear();
@@ -117,14 +125,27 @@ namespace TextEditor.Interface
                 case ConsoleKey.Enter:
                     addText(Environment.NewLine);
                     handleCursor(ConsoleKey.DownArrow);
+                    handleCursor(ConsoleKey.LeftArrow);
+                    handleCursor(ConsoleKey.LeftArrow);
+                    _movedCursor = true;
                     break;
             }
         }
 
-        void deleteText()
+        void deleteText(int count = 1)
         {
-            _table.deleteText(getCursorIndex());
-            handleCursor(ConsoleKey.LeftArrow);
+            if (Console.GetCursorPosition().Left == _separation)
+            {
+                int ind = getCursorIndex();
+                _table.deleteText(ind);
+                _table.deleteText(ind - 1);
+                handleCursor(ConsoleKey.LeftArrow);
+            }
+            else
+            {
+                _table.deleteText(getCursorIndex());
+                handleCursor(ConsoleKey.LeftArrow);
+            }
             ReDraw();
         }
 
@@ -142,7 +163,13 @@ namespace TextEditor.Interface
             List<CLILine> lines = _screen.getLines();
             foreach (CLILine line in lines)
             {
-                if (pos.Item2 == line.getNum() - 1) break;
+                if (pos.Item2 + _heightOffset == line.getNum() - 1)
+                {
+                    index += pos.Item1 - _separation;
+                    _lastPos = index;
+                    _movedCursor = false;
+                    return index;
+                }
                 index += line.getLength();
             }
             index += pos.Item1 - _separation;
@@ -174,7 +201,7 @@ namespace TextEditor.Interface
             if (top > _screen.getLines().Count - _heightOffset - 1 || top >= Console.BufferHeight - 1) { top = Math.Min(Console.BufferHeight - 1, _screen.getLines().Count - _heightOffset - 1); }
             if (top > Console.BufferHeight - 4) scrollDown();
             if (left < _separation) left = _separation;
-            if (left > _screen.getLines().ToArray().ElementAt(top).getLength() + _separation - 2) left = _screen.getLines().ToArray().ElementAt(top).getLength() + _separation - 2;
+            if (left > _screen.getLines().ToArray().ElementAt(top + _heightOffset).getLength() + _separation - 2) left = _screen.getLines().ToArray().ElementAt(top + _heightOffset).getLength() + _separation - 2;
 
             Console.SetCursorPosition(left, top);
         }
