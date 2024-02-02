@@ -3,6 +3,7 @@ using TextEditor.Tables;
 using System;
 using System.Runtime.InteropServices;
 using TextEditor.GUI.CLI;
+using TextEditor.Dev;
 
 namespace TextEditor.app
 {
@@ -32,7 +33,8 @@ namespace TextEditor.app
             String path = "./test.txt";
             Files.File file = new Files.File(path);
             Table table = new Table(file.getFullText());
-            CLIEditor editor = new CLIEditor(table);
+            MockTable mockTable = new MockTable(file.getFullText());
+            CLIEditor editor = new CLIEditor(mockTable);
             editor.start();
         }
     }
