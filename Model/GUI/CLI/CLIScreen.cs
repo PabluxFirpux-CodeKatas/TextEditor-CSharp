@@ -1,4 +1,4 @@
-namespace TextEditor.Interface
+namespace TextEditor.GUI.CLI
 {
     class CLIScreen
     {

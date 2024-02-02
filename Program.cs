@@ -2,7 +2,7 @@
 using TextEditor.Tables;
 using System;
 using System.Runtime.InteropServices;
-using TextEditor.Interface;
+using TextEditor.GUI.CLI;
 
 namespace TextEditor.app
 {
