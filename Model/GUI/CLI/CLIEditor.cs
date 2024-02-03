@@ -29,7 +29,6 @@ namespace TextEditor.GUI.CLI
         }
         void exitProgram(int code = 0)
         {
-            _file.saveFile(_table.getText());
             Console.Clear();
             Console.TreatControlCAsInput = false;
             Environment.Exit(code);
@@ -122,6 +121,7 @@ namespace TextEditor.GUI.CLI
             switch (key)
             {
                 case ConsoleKey.Escape:
+                    saveFile();
                     exitProgram();
                     break;
                 case ConsoleKey.UpArrow:
@@ -257,6 +257,11 @@ namespace TextEditor.GUI.CLI
             int top = Console.CursorTop;
             int maxLeft = _screen.getLines().ToArray().ElementAt(top + _heightOffset).getLength() + _separation - 2;
             Console.SetCursorPosition(maxLeft, top);
+        }
+
+        void saveFile()
+        {
+            _file.saveFile(_table.getText());
         }
     }
 }

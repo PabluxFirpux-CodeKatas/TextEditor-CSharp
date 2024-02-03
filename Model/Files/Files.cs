@@ -14,6 +14,7 @@ namespace TextEditor.Files
 
         public String getFullText()
         {
+            if (!System.IO.File.Exists(_path)) return "";
             return System.IO.File.ReadAllText(_path);
         }
 
