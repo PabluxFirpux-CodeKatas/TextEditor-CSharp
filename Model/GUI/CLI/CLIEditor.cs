@@ -108,8 +108,8 @@ namespace TextEditor.GUI.CLI
         {
             addText(_buffer.ToString());
             _buffer.Clear();
-            _movedCursor = true;
             ReDraw();
+            _movedCursor = true;
         }
 
         void handleSpecialCharacter(ConsoleKey key)
@@ -131,10 +131,6 @@ namespace TextEditor.GUI.CLI
                     break;
                 case ConsoleKey.Enter:
                     addText(Environment.NewLine);
-                    // handleCursor(ConsoleKey.DownArrow);
-
-                    // handleCursor(ConsoleKey.LeftArrow);
-                    // handleCursor(ConsoleKey.LeftArrow);
                     EnterCursor();
                     _movedCursor = true;
                     break;
@@ -146,7 +142,7 @@ namespace TextEditor.GUI.CLI
             if (Console.GetCursorPosition().Left == _separation)
             {
                 int ind = getCursorIndex();
-                _table.deleteText(ind - 1);
+                _table.deleteText(ind);
                 _table.deleteText(ind - 1);
                 handleCursor(ConsoleKey.LeftArrow);
                 handleCursor(ConsoleKey.UpArrow);

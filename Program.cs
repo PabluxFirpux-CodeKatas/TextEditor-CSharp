@@ -1,8 +1,4 @@
-﻿using TextEditor.Files;
-using TextEditor.Tables;
-using System;
-using System.Runtime.InteropServices;
-using TextEditor.GUI.CLI;
+﻿using TextEditor.GUI.CLI;
 using TextEditor.Dev;
 
 namespace TextEditor.app

@@ -21,7 +21,10 @@ namespace TextEditor.GUI.CLI
             {
                 if (s.Length >= Console.WindowWidth - 2)
                 {
-                    recursiveLines(s);
+                    // recursiveLines(s);
+                    String line = s;
+                    line += Environment.NewLine;
+                    _lines.Add(new CLILine(_num + 1, line));
                 }
                 else
                 {
