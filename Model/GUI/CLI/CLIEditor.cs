@@ -142,10 +142,10 @@ namespace TextEditor.GUI.CLI
             if (Console.GetCursorPosition().Left == _separation)
             {
                 int ind = getCursorIndex();
+                handleCursor(ConsoleKey.UpArrow);
+                cursorMaxLeft();
                 _table.deleteText(ind);
                 _table.deleteText(ind - 1);
-                handleCursor(ConsoleKey.LeftArrow);
-                handleCursor(ConsoleKey.UpArrow);
             }
             else
             {
@@ -204,11 +204,11 @@ namespace TextEditor.GUI.CLI
                     left += 1;
                     break;
             }
-            if (top < 0) { top = 0; scrollUp(); }
-            if (top > _screen.getLines().Count - _heightOffset - 1 || top > Console.BufferHeight - 1) { top = Math.Min(Console.BufferHeight - 1, _screen.getLines().Count - _heightOffset - 1); }
+            if (top < 0) { cursorMinTop(); scrollUp(); return; }
+            if (top > _screen.getLines().Count - _heightOffset - 1 || top > Console.BufferHeight - 1) { cursorMaxTop(); return; }
             if (top > Console.BufferHeight - 4) { top = Console.BufferHeight - 4; scrollDown(); }
-            if (left < _separation) left = _separation;
-            if (left > _screen.getLines().ToArray().ElementAt(top + _heightOffset).getLength() + _separation - 2) left = _screen.getLines().ToArray().ElementAt(top + _heightOffset).getLength() + _separation - 2;
+            if (left < _separation) { cursorMinLeft(); return; }
+            if (left > _screen.getLines().ToArray().ElementAt(top + _heightOffset).getLength() + _separation - 2) { cursorMaxLeft(); return; }
 
             Console.SetCursorPosition(left, top);
         }
@@ -228,9 +228,31 @@ namespace TextEditor.GUI.CLI
 
         void EnterCursor()
         {
+            cursorMinLeft();
             handleCursor(ConsoleKey.DownArrow);
+        }
+
+        void cursorMinTop()
+        {
+            Console.SetCursorPosition(Console.CursorLeft, 0);
+        }
+
+        void cursorMaxTop()
+        {
+            int maxTop = Math.Min(Console.BufferHeight - 1, _screen.getLines().Count - _heightOffset - 1);
+            Console.SetCursorPosition(Console.CursorLeft, maxTop);
+        }
+
+        void cursorMinLeft()
+        {
+            Console.SetCursorPosition(_separation, Console.CursorTop);
+        }
+
+        void cursorMaxLeft()
+        {
             int top = Console.CursorTop;
-            Console.SetCursorPosition(_separation, top);
+            int maxLeft = _screen.getLines().ToArray().ElementAt(top + _heightOffset).getLength() + _separation - 2;
+            Console.SetCursorPosition(maxLeft, top);
         }
     }
 }
