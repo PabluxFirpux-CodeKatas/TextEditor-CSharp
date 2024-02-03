@@ -35,7 +35,7 @@ namespace TextEditor.Dev
         {
             try
             {
-                _text.Remove(index, 1);
+                _text.Remove(index - 1, 1);
             }
             catch
             {

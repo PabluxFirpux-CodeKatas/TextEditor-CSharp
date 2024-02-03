@@ -30,9 +30,9 @@ namespace TextEditor.app
                 Console.WriteLine(table.parseTable());
                 Thread.Sleep(1000 / 60);
             } */
-            String path = "./test.txt";
+            String path = "D:/AAUni/Personal/C#/TextEditor-CSharp/test.txt";
             Files.File file = new Files.File(path);
-            Table table = new Table(file.getFullText());
+            // Table table = new Table(file.getFullText());
             MockTable mockTable = new MockTable(file.getFullText());
             CLIEditor editor = new CLIEditor(mockTable);
             editor.start();
