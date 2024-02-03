@@ -1,11 +1,14 @@
 using System.Text;
+using System;
 using TextEditor.Interfaces;
+using TextEditor.Files;
 
 namespace TextEditor.GUI.CLI
 {
     class CLIEditor
     {
         IEditable _table;
+        Files.File _file;
         CLIScreen _screen;
         StringBuilder _buffer;
         Boolean _movedCursor;
@@ -14,9 +17,10 @@ namespace TextEditor.GUI.CLI
         int _separation;
         static ConsoleKey[] specialCharacters = { ConsoleKey.UpArrow, ConsoleKey.DownArrow, ConsoleKey.LeftArrow, ConsoleKey.RightArrow, ConsoleKey.Escape, ConsoleKey.Backspace, ConsoleKey.Enter };
 
-        public CLIEditor(IEditable table)
+        public CLIEditor(IEditable table, Files.File file)
         {
             _table = table;
+            _file = file;
             _buffer = new StringBuilder();
             _movedCursor = false;
             _lastPos = 0;
@@ -25,6 +29,7 @@ namespace TextEditor.GUI.CLI
         }
         void exitProgram(int code = 0)
         {
+            _file.saveFile(_table.getText());
             Console.Clear();
             Console.TreatControlCAsInput = false;
             Environment.Exit(code);
@@ -90,9 +95,10 @@ namespace TextEditor.GUI.CLI
             }
         }
 
-        Boolean handleKeyPress(ConsoleKeyInfo key)
+        void handleKeyPress(ConsoleKeyInfo key)
         {
             Boolean specialChar = specialCharacters.Contains(key.Key);
+            if (Char.IsControl(key.KeyChar) && !specialChar) return;
             if (specialChar) handleSpecialCharacter(key.Key);
             else
             {
@@ -100,8 +106,6 @@ namespace TextEditor.GUI.CLI
                 ReDraw();
                 handleCursor(ConsoleKey.RightArrow);
             }
-
-            return !specialChar;
         }
 
         void pushBuffer()

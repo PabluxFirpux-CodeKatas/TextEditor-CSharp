@@ -5,28 +5,21 @@ namespace TextEditor.Files
 {
     class File
     {
-        private StreamReader reader;
+        private string _path;
+
         public File(String path)
         {
-            reader = new StreamReader(path);
-        }
-
-        public String getLine()
-        {
-            return reader.ReadLine();
+            _path = path;
         }
 
         public String getFullText()
         {
-            String text = "";
-            String line = getLine();
-            while (line != null)
-            {
-                text += line;
-                text += Environment.NewLine;
-                line = getLine();
-            }
-            return text;
+            return System.IO.File.ReadAllText(_path);
+        }
+
+        public void saveFile(String text)
+        {
+            System.IO.File.WriteAllText(_path, text);
         }
     }
 }

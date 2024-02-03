@@ -1,4 +1,5 @@
 ﻿using TextEditor.GUI.CLI;
+using TextEditor.Tables;
 using TextEditor.Dev;
 
 namespace TextEditor.app
@@ -28,9 +29,9 @@ namespace TextEditor.app
             } */
             String path = "D:/AAUni/Personal/C#/TextEditor-CSharp/test.txt";
             Files.File file = new Files.File(path);
-            // Table table = new Table(file.getFullText());
-            MockTable mockTable = new MockTable(file.getFullText());
-            CLIEditor editor = new CLIEditor(mockTable);
+            Table table = new Table(file.getFullText());
+            // MockTable mockTable = new MockTable(file.getFullText());
+            CLIEditor editor = new CLIEditor(table, file);
             editor.start();
         }
     }
