@@ -1,4 +1,4 @@
-namespace TextEditor.Interface
+namespace TextEditor.GUI.CLI
 {
     class CLIScreen
     {
@@ -21,7 +21,10 @@ namespace TextEditor.Interface
             {
                 if (s.Length >= Console.WindowWidth - 2)
                 {
-                    recursiveLines(s);
+                    // recursiveLines(s);
+                    String line = s;
+                    line += Environment.NewLine;
+                    _lines.Add(new CLILine(_num + 1, line));
                 }
                 else
                 {

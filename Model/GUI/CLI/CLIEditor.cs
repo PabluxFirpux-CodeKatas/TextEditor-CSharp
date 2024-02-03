@@ -1,10 +1,11 @@
 using System.Text;
+using TextEditor.Interfaces;
 
-namespace TextEditor.Interface
+namespace TextEditor.GUI.CLI
 {
     class CLIEditor
     {
-        Tables.Table _table;
+        IEditable _table;
         CLIScreen _screen;
         StringBuilder _buffer;
         Boolean _movedCursor;
@@ -13,7 +14,7 @@ namespace TextEditor.Interface
         int _separation;
         static ConsoleKey[] specialCharacters = { ConsoleKey.UpArrow, ConsoleKey.DownArrow, ConsoleKey.LeftArrow, ConsoleKey.RightArrow, ConsoleKey.Escape, ConsoleKey.Backspace, ConsoleKey.Enter };
 
-        public CLIEditor(Tables.Table table)
+        public CLIEditor(IEditable table)
         {
             _table = table;
             _buffer = new StringBuilder();
@@ -35,7 +36,7 @@ namespace TextEditor.Interface
             Console.CursorVisible = true;
             Console.TreatControlCAsInput = true;
             Console.Clear();
-            _screen = new CLIScreen(_table.parseTable());
+            _screen = new CLIScreen(_table.getText());
             print(_screen);
             Console.SetCursorPosition(2, 0);
             while (true)
@@ -49,7 +50,7 @@ namespace TextEditor.Interface
         void ReDraw()
         {
             (int, int) pos = Console.GetCursorPosition();
-            StringBuilder textToDraw = new StringBuilder(_table.parseTable());
+            StringBuilder textToDraw = new StringBuilder(_table.getText());
             int index = getCursorIndex();
             if (index > textToDraw.Length)
             {
@@ -57,7 +58,7 @@ namespace TextEditor.Interface
             }
             else
             {
-                textToDraw.Insert(getCursorIndex(), _buffer.ToString());
+                textToDraw.Insert(index, _buffer.ToString());
             }
             _screen = new CLIScreen(textToDraw.ToString());
 
@@ -103,11 +104,17 @@ namespace TextEditor.Interface
             return !specialChar;
         }
 
-        void handleSpecialCharacter(ConsoleKey key)
+        void pushBuffer()
         {
             addText(_buffer.ToString());
             _buffer.Clear();
+            ReDraw();
             _movedCursor = true;
+        }
+
+        void handleSpecialCharacter(ConsoleKey key)
+        {
+            pushBuffer();
             switch (key)
             {
                 case ConsoleKey.Escape:
@@ -124,9 +131,7 @@ namespace TextEditor.Interface
                     break;
                 case ConsoleKey.Enter:
                     addText(Environment.NewLine);
-                    handleCursor(ConsoleKey.DownArrow);
-                    handleCursor(ConsoleKey.LeftArrow);
-                    handleCursor(ConsoleKey.LeftArrow);
+                    EnterCursor();
                     _movedCursor = true;
                     break;
             }
@@ -137,21 +142,23 @@ namespace TextEditor.Interface
             if (Console.GetCursorPosition().Left == _separation)
             {
                 int ind = getCursorIndex();
+                handleCursor(ConsoleKey.UpArrow);
+                cursorMaxLeft();
                 _table.deleteText(ind);
                 _table.deleteText(ind - 1);
-                handleCursor(ConsoleKey.LeftArrow);
             }
             else
             {
                 _table.deleteText(getCursorIndex());
                 handleCursor(ConsoleKey.LeftArrow);
             }
+            _movedCursor = true;
             ReDraw();
         }
 
         void addText(String text)
         {
-            _table.addText(text, getCursorIndex());
+            _table.addText(getCursorIndex(), text);
             ReDraw();
         }
 
@@ -197,11 +204,11 @@ namespace TextEditor.Interface
                     left += 1;
                     break;
             }
-            if (top < 0) { top = 0; scrollUp(); }
-            if (top > _screen.getLines().Count - _heightOffset - 1 || top >= Console.BufferHeight - 1) { top = Math.Min(Console.BufferHeight - 1, _screen.getLines().Count - _heightOffset - 1); }
-            if (top > Console.BufferHeight - 4) scrollDown();
-            if (left < _separation) left = _separation;
-            if (left > _screen.getLines().ToArray().ElementAt(top + _heightOffset).getLength() + _separation - 2) left = _screen.getLines().ToArray().ElementAt(top + _heightOffset).getLength() + _separation - 2;
+            if (top < 0) { cursorMinTop(); scrollUp(); return; }
+            if (top > _screen.getLines().Count - _heightOffset - 1 || top > Console.BufferHeight - 1) { cursorMaxTop(); return; }
+            if (top > Console.BufferHeight - 4) { top = Console.BufferHeight - 4; scrollDown(); }
+            if (left < _separation) { cursorMinLeft(); return; }
+            if (left > _screen.getLines().ToArray().ElementAt(top + _heightOffset).getLength() + _separation - 2) { cursorMaxLeft(); return; }
 
             Console.SetCursorPosition(left, top);
         }
@@ -217,6 +224,35 @@ namespace TextEditor.Interface
         {
             _heightOffset += 1;
             ReDraw();
+        }
+
+        void EnterCursor()
+        {
+            cursorMinLeft();
+            handleCursor(ConsoleKey.DownArrow);
+        }
+
+        void cursorMinTop()
+        {
+            Console.SetCursorPosition(Console.CursorLeft, 0);
+        }
+
+        void cursorMaxTop()
+        {
+            int maxTop = Math.Min(Console.BufferHeight - 1, _screen.getLines().Count - _heightOffset - 1);
+            Console.SetCursorPosition(Console.CursorLeft, maxTop);
+        }
+
+        void cursorMinLeft()
+        {
+            Console.SetCursorPosition(_separation, Console.CursorTop);
+        }
+
+        void cursorMaxLeft()
+        {
+            int top = Console.CursorTop;
+            int maxLeft = _screen.getLines().ToArray().ElementAt(top + _heightOffset).getLength() + _separation - 2;
+            Console.SetCursorPosition(maxLeft, top);
         }
     }
 }

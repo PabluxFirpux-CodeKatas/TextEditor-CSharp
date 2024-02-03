@@ -1,8 +1,9 @@
 using System.Collections;
+using TextEditor.Interfaces;
 
 namespace TextEditor.Tables
 {
-    class Table
+    class Table : IEditable
     {
         private String _originalText;
         private String _modification;
@@ -23,7 +24,7 @@ namespace TextEditor.Tables
 
         public ArrayList getCells() { return _cells; }
 
-        public String parseTable()
+        public String getText()
         {
             String text = "";
             foreach (Cell c in _cells)
@@ -33,7 +34,7 @@ namespace TextEditor.Tables
             return text;
         }
 
-        public void addText(String text, int index)
+        public void addText(int index, String text)
         {
             Cell c = getCellAtIndex(index);
             Cell toAdd = new Cell(FileType.MODIFICATION, _modification.Length, text.Length);
