@@ -125,7 +125,6 @@ namespace TextEditor.GUI.CLI
             switch (key)
             {
                 case ConsoleKey.Escape:
-                    // saveFile();
                     exitProgram();
                     break;
                 case ConsoleKey.UpArrow:
@@ -153,7 +152,8 @@ namespace TextEditor.GUI.CLI
                 handleCursor(ConsoleKey.UpArrow);
                 cursorMaxLeft();
                 _table.deleteText(ind);
-                _table.deleteText(ind - 1);
+                if (Environment.NewLine.Length > 1)
+                    _table.deleteText(ind - 1);
             }
             else
             {
@@ -216,7 +216,7 @@ namespace TextEditor.GUI.CLI
             if (top > _screen.getLines().Count - _heightOffset - 1 || top > Console.BufferHeight - 1) { cursorMaxTop(); return; }
             if (top > Console.BufferHeight - 4) { top = Console.BufferHeight - 4; scrollDown(); }
             if (left < _separation) { cursorMinLeft(); return; }
-            if (left > _screen.getLines().ToArray().ElementAt(top + _heightOffset).getLength() + _separation - 2) { cursorMaxLeft(); return; }
+            if (left > _screen.getLines().ToArray().ElementAt(top + _heightOffset).getLength() + _separation - Environment.NewLine.Length) { cursorMaxLeft(); return; }
 
             Console.SetCursorPosition(left, top);
         }
@@ -259,7 +259,7 @@ namespace TextEditor.GUI.CLI
         void cursorMaxLeft()
         {
             int top = Console.CursorTop;
-            int maxLeft = _screen.getLines().ToArray().ElementAt(top + _heightOffset).getLength() + _separation - 2;
+            int maxLeft = _screen.getLines().ToArray().ElementAt(top + _heightOffset).getLength() + _separation - Environment.NewLine.Length;
             Console.SetCursorPosition(maxLeft, top);
         }
 
