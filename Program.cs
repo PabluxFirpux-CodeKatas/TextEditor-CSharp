@@ -1,39 +1,26 @@
-﻿using TextEditor.Files;
+﻿using TextEditor.GUI.CLI;
 using TextEditor.Tables;
-using System;
-using System.Runtime.InteropServices;
-using TextEditor.Interface;
+using TextEditor.Dev;
+using TextEditor.Factory;
 
 namespace TextEditor.app
 {
     class Program
     {
-        static void Main()
+        static void Main(string[] args)
         {
-            /* Console.Clear();
-            String path = "./test.txt";
-            Files.File file = new Files.File(path);
-            Table table = new Table(file.getFullText());
-            table.addText("MECMECMEMCM", 2);
-            table.addText("MECMECMEMCM", 53);
-            table.deleteText(2);
-            foreach (Cell c in table.getCells())
+            if (args.Length != 1)
             {
-                Console.WriteLine(c.ToString());
+                printHelp();
+                return;
             }
-            Console.WriteLine("=============");
-            Console.WriteLine(table.parseTable());
-            while (true)
-            {
-                Console.Clear();
-                Console.WriteLine(table.parseTable());
-                Thread.Sleep(1000 / 60);
-            } */
-            String path = "./test.txt";
-            Files.File file = new Files.File(path);
-            Table table = new Table(file.getFullText());
-            CLIEditor editor = new CLIEditor(table);
-            editor.start();
+            String path = args[0];
+            EditorFactory.OpenEditor(path, FileGUI.CLI, FileDataStructure.TABLE);
+        }
+
+        static void printHelp()
+        {
+            Console.WriteLine("First Argument should be the name of the file to be edited or created");
         }
     }
 }

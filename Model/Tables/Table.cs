@@ -1,8 +1,10 @@
 using System.Collections;
+using System.Linq;
+using TextEditor.Interfaces;
 
 namespace TextEditor.Tables
 {
-    class Table
+    class Table : IEditable
     {
         private String _originalText;
         private String _modification;
@@ -23,7 +25,7 @@ namespace TextEditor.Tables
 
         public ArrayList getCells() { return _cells; }
 
-        public String parseTable()
+        public String getText()
         {
             String text = "";
             foreach (Cell c in _cells)
@@ -33,11 +35,16 @@ namespace TextEditor.Tables
             return text;
         }
 
-        public void addText(String text, int index)
+        public void addText(int index, String text)
         {
             Cell c = getCellAtIndex(index);
             Cell toAdd = new Cell(FileType.MODIFICATION, _modification.Length, text.Length);
             _modification += text;
+            if (c == null)
+            {
+                _cells.Insert(_cells.Count, toAdd);
+                return;
+            }
             int cellIndex = _cells.IndexOf(c);
             int beginIndex = getGeneralIndex(c);
             _cells.Remove(c);
@@ -47,12 +54,18 @@ namespace TextEditor.Tables
             _cells.Insert(cellIndex++, prev);
             _cells.Insert(cellIndex++, toAdd);
             _cells.Insert(cellIndex++, post);
+            updateTable();
         }
 
         public void deleteText(int index)
         {
             Cell c = getCellAtIndex(index);
-            if (index == c.getIndex() + c.getLength())
+            if (c == null)
+            {
+                c = (Cell)_cells[_cells.Count - 1];
+                c.setLenght(c.getLength() - 1);
+            }
+            else if (index == c.getIndex() + c.getLength())
             {
                 c.setLenght(c.getLength() - 1);
             }
@@ -61,16 +74,15 @@ namespace TextEditor.Tables
                 int cellIndex = _cells.IndexOf(c);
                 int beginIndex = getGeneralIndex(c);
                 int diff = index - beginIndex;
-                Cell prev = new Cell(FileType.ORIGINAL, c.getIndex(), diff - 1);
-                Cell post = new Cell(FileType.ORIGINAL, c.getIndex() + diff, c.getLength() - diff);
+                Cell prev = new Cell(c.getFileType(), c.getIndex(), diff - 1);
+                Cell post = new Cell(c.getFileType(), c.getIndex() + diff, c.getLength() - diff);
                 // prev.setLenght(prev.getLength() - 1);
                 _cells.Remove(c);
                 _cells.Insert(cellIndex++, prev);
                 _cells.Insert(cellIndex++, post);
 
             }
-
-
+            updateTable();
         }
 
         private Cell getCellAtIndex(int i)
@@ -93,6 +105,15 @@ namespace TextEditor.Tables
                 x += cell.getLength();
             }
             return -1;
+        }
+
+        private void updateTable()
+        {
+            ArrayList cells = (ArrayList)getCells().Clone();
+            foreach (Cell c in cells)
+            {
+                if (c.getLength() <= 0) _cells.Remove(c);
+            }
         }
     }
 }
