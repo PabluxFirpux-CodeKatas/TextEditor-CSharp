@@ -7,10 +7,20 @@ namespace TextEditor.app
 {
     class Program
     {
-        static void Main()
+        static void Main(string[] args)
         {
-            String path = "D:/AAUni/Personal/C#/TextEditor-CSharp/test.txt";
+            if (args.Length != 1)
+            {
+                printHelp();
+                return;
+            }
+            String path = args[0];
             EditorFactory.OpenEditor(path, FileGUI.CLI, FileDataStructure.TABLE);
+        }
+
+        static void printHelp()
+        {
+            Console.WriteLine("First Argument should be the name of the file to be edited or created");
         }
     }
 }

@@ -8,6 +8,7 @@ namespace TextEditor.GUI.CLI
     class CLIEditor
     {
         IEditable _table;
+        String _filename;
         Files.File _file;
         CLIScreen _screen;
         StringBuilder _buffer;
@@ -17,10 +18,11 @@ namespace TextEditor.GUI.CLI
         int _separation;
         static ConsoleKey[] specialCharacters = { ConsoleKey.UpArrow, ConsoleKey.DownArrow, ConsoleKey.LeftArrow, ConsoleKey.RightArrow, ConsoleKey.Escape, ConsoleKey.Backspace, ConsoleKey.Enter };
 
-        public CLIEditor(IEditable table, Files.File file)
+        public CLIEditor(IEditable table, Files.File file, String filename)
         {
             _table = table;
             _file = file;
+            _filename = filename;
             _buffer = new StringBuilder();
             _movedCursor = false;
             _lastPos = 0;
@@ -34,9 +36,9 @@ namespace TextEditor.GUI.CLI
             Environment.Exit(code);
         }
 
-        public void start(String docName = "PabloWord")
+        public void start()
         {
-            Console.Title = $"{docName}";
+            Console.Title = $"{_filename}";
             Console.CursorVisible = true;
             Console.TreatControlCAsInput = true;
             Console.Clear();
@@ -97,6 +99,7 @@ namespace TextEditor.GUI.CLI
         void handleKeyPress(ConsoleKeyInfo key)
         {
             Boolean specialChar = specialCharacters.Contains(key.Key);
+            if (key.Modifiers.HasFlag(ConsoleModifiers.Control) && key.Key.Equals(ConsoleKey.S)) { saveFile(); return; }
             if (Char.IsControl(key.KeyChar) && !specialChar) return;
             if (specialChar) handleSpecialCharacter(key.Key);
             else
@@ -104,6 +107,7 @@ namespace TextEditor.GUI.CLI
                 _buffer.Append(key.KeyChar);
                 ReDraw();
                 handleCursor(ConsoleKey.RightArrow);
+                Console.Title = $"{_filename} (unsaved)";
             }
         }
 
@@ -121,7 +125,7 @@ namespace TextEditor.GUI.CLI
             switch (key)
             {
                 case ConsoleKey.Escape:
-                    saveFile();
+                    // saveFile();
                     exitProgram();
                     break;
                 case ConsoleKey.UpArrow:
@@ -261,6 +265,7 @@ namespace TextEditor.GUI.CLI
 
         void saveFile()
         {
+            Console.Title = $"{_filename}";
             _file.saveFile(_table.getText());
         }
     }

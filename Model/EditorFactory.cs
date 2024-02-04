@@ -23,11 +23,11 @@ namespace TextEditor.Factory
             switch (fileGUI)
             {
                 case FileGUI.CLI:
-                    CLIEditor editor = new CLIEditor(editable, file);
+                    CLIEditor editor = new CLIEditor(editable, file, getFileName(path));
                     editor.start();
                     break;
                 default:
-                    CLIEditor edit = new CLIEditor(editable, file);
+                    CLIEditor edit = new CLIEditor(editable, file, getFileName(path));
                     edit.start();
                     break;
             }
@@ -42,6 +42,11 @@ namespace TextEditor.Factory
                 default:
                     return new MockTable(file.getFullText());
             }
+        }
+
+        private static String getFileName(String path)
+        {
+            return System.IO.Path.GetFileName(path);
         }
     }
 }
