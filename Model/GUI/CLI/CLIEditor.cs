@@ -1,11 +1,15 @@
 using System.Text;
+using System;
 using TextEditor.Interfaces;
+using TextEditor.Files;
 
 namespace TextEditor.GUI.CLI
 {
     class CLIEditor
     {
         IEditable _table;
+        String _filename;
+        Files.File _file;
         CLIScreen _screen;
         StringBuilder _buffer;
         Boolean _movedCursor;
@@ -14,9 +18,11 @@ namespace TextEditor.GUI.CLI
         int _separation;
         static ConsoleKey[] specialCharacters = { ConsoleKey.UpArrow, ConsoleKey.DownArrow, ConsoleKey.LeftArrow, ConsoleKey.RightArrow, ConsoleKey.Escape, ConsoleKey.Backspace, ConsoleKey.Enter };
 
-        public CLIEditor(IEditable table)
+        public CLIEditor(IEditable table, Files.File file, String filename)
         {
             _table = table;
+            _file = file;
+            _filename = filename;
             _buffer = new StringBuilder();
             _movedCursor = false;
             _lastPos = 0;
@@ -30,9 +36,9 @@ namespace TextEditor.GUI.CLI
             Environment.Exit(code);
         }
 
-        public void start(String docName = "PabloWord")
+        public void start()
         {
-            Console.Title = $"{docName}";
+            Console.Title = $"{_filename}";
             Console.CursorVisible = true;
             Console.TreatControlCAsInput = true;
             Console.Clear();
@@ -90,18 +96,19 @@ namespace TextEditor.GUI.CLI
             }
         }
 
-        Boolean handleKeyPress(ConsoleKeyInfo key)
+        void handleKeyPress(ConsoleKeyInfo key)
         {
             Boolean specialChar = specialCharacters.Contains(key.Key);
+            if (key.Modifiers.HasFlag(ConsoleModifiers.Control) && key.Key.Equals(ConsoleKey.S)) { saveFile(); return; }
+            if (Char.IsControl(key.KeyChar) && !specialChar) return;
             if (specialChar) handleSpecialCharacter(key.Key);
             else
             {
                 _buffer.Append(key.KeyChar);
                 ReDraw();
                 handleCursor(ConsoleKey.RightArrow);
+                Console.Title = $"{_filename} (unsaved)";
             }
-
-            return !specialChar;
         }
 
         void pushBuffer()
@@ -145,7 +152,8 @@ namespace TextEditor.GUI.CLI
                 handleCursor(ConsoleKey.UpArrow);
                 cursorMaxLeft();
                 _table.deleteText(ind);
-                _table.deleteText(ind - 1);
+                if (Environment.NewLine.Length > 1)
+                    _table.deleteText(ind - 1);
             }
             else
             {
@@ -208,7 +216,7 @@ namespace TextEditor.GUI.CLI
             if (top > _screen.getLines().Count - _heightOffset - 1 || top > Console.BufferHeight - 1) { cursorMaxTop(); return; }
             if (top > Console.BufferHeight - 4) { top = Console.BufferHeight - 4; scrollDown(); }
             if (left < _separation) { cursorMinLeft(); return; }
-            if (left > _screen.getLines().ToArray().ElementAt(top + _heightOffset).getLength() + _separation - 2) { cursorMaxLeft(); return; }
+            if (left > _screen.getLines().ToArray().ElementAt(top + _heightOffset).getLength() + _separation - Environment.NewLine.Length) { cursorMaxLeft(); return; }
 
             Console.SetCursorPosition(left, top);
         }
@@ -251,8 +259,14 @@ namespace TextEditor.GUI.CLI
         void cursorMaxLeft()
         {
             int top = Console.CursorTop;
-            int maxLeft = _screen.getLines().ToArray().ElementAt(top + _heightOffset).getLength() + _separation - 2;
+            int maxLeft = _screen.getLines().ToArray().ElementAt(top + _heightOffset).getLength() + _separation - Environment.NewLine.Length;
             Console.SetCursorPosition(maxLeft, top);
+        }
+
+        void saveFile()
+        {
+            Console.Title = $"{_filename}";
+            _file.saveFile(_table.getText());
         }
     }
 }

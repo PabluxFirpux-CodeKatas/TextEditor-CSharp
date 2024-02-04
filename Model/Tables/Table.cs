@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using TextEditor.Interfaces;
 
 namespace TextEditor.Tables
@@ -53,12 +54,18 @@ namespace TextEditor.Tables
             _cells.Insert(cellIndex++, prev);
             _cells.Insert(cellIndex++, toAdd);
             _cells.Insert(cellIndex++, post);
+            updateTable();
         }
 
         public void deleteText(int index)
         {
             Cell c = getCellAtIndex(index);
-            if (index == c.getIndex() + c.getLength())
+            if (c == null)
+            {
+                c = (Cell)_cells[_cells.Count - 1];
+                c.setLenght(c.getLength() - 1);
+            }
+            else if (index == c.getIndex() + c.getLength())
             {
                 c.setLenght(c.getLength() - 1);
             }
@@ -67,14 +74,15 @@ namespace TextEditor.Tables
                 int cellIndex = _cells.IndexOf(c);
                 int beginIndex = getGeneralIndex(c);
                 int diff = index - beginIndex;
-                Cell prev = new Cell(FileType.ORIGINAL, c.getIndex(), diff - 1);
-                Cell post = new Cell(FileType.ORIGINAL, c.getIndex() + diff, c.getLength() - diff);
+                Cell prev = new Cell(c.getFileType(), c.getIndex(), diff - 1);
+                Cell post = new Cell(c.getFileType(), c.getIndex() + diff, c.getLength() - diff);
                 // prev.setLenght(prev.getLength() - 1);
                 _cells.Remove(c);
                 _cells.Insert(cellIndex++, prev);
                 _cells.Insert(cellIndex++, post);
 
             }
+            updateTable();
         }
 
         private Cell getCellAtIndex(int i)
@@ -97,6 +105,15 @@ namespace TextEditor.Tables
                 x += cell.getLength();
             }
             return -1;
+        }
+
+        private void updateTable()
+        {
+            ArrayList cells = (ArrayList)getCells().Clone();
+            foreach (Cell c in cells)
+            {
+                if (c.getLength() <= 0) _cells.Remove(c);
+            }
         }
     }
 }
