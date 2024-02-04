@@ -266,6 +266,7 @@ namespace TextEditor.GUI.CLI
         void saveFile()
         {
             Console.Title = $"{_filename}";
+            pushBuffer();
             _file.saveFile(_table.getText());
         }
     }
